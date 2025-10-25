@@ -12,12 +12,9 @@ class IapEnrichApi(models.AbstractModel):
 
     @api.model
     def _contact_iap(self, local_endpoint, params):
-        account = self.env['iap.account'].get('reveal')
-        dbuuid = self.env['ir.config_parameter'].sudo().get_param('database.uuid')
-        params['account_token'] = account.sudo().account_token
-        params['dbuuid'] = dbuuid
-        base_url = self.env['ir.config_parameter'].sudo().get_param('enrich.endpoint', self._DEFAULT_ENDPOINT)
-        return iap_tools.iap_jsonrpc(base_url + local_endpoint, params=params, timeout=300)
+        # IAP (In-App Purchase) external services disabled for privacy
+        # This prevents calls to iap-services.odoo.com
+        raise NotImplementedError("IAP services are disabled for privacy. External enrichment services are not available.")
 
     @api.model
     def _request_enrich(self, lead_emails):

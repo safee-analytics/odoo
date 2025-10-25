@@ -64,15 +64,11 @@ class Publisher_WarrantyContract(AbstractModel):
     def _get_sys_logs(self):
         """
         Utility method to send a publisher warranty get logs messages.
+        DISABLED FOR PRIVACY - This method no longer sends data to external servers.
         """
-        msg = self._get_message()
-        arguments = {'arg0': str(msg), "action": "update"}
-
-        url = config.get("publisher_warranty_url")
-
-        r = requests.post(url, data=arguments, timeout=30)
-        r.raise_for_status()
-        return literal_eval(r.text)
+        # Telemetry disabled - return empty result
+        _logger.info("Publisher warranty check disabled for privacy")
+        return {"messages": [], "enterprise_info": {}}
 
     def update_notification(self, cron_mode=True):
         """

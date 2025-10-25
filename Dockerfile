@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     git \
     curl \
+    gosu \
     # wkhtmltopdf for PDF reports
     wkhtmltopdf \
     # Node.js for asset building
@@ -46,19 +47,16 @@ RUN pip install --no-cache-dir -r requirements.txt \
 RUN mkdir -p /var/lib/odoo \
     && chown -R odoo:odoo /var/lib/odoo
 
-# Copy configuration
-COPY --chown=odoo:odoo odoo.conf /etc/odoo/odoo.conf
-
-# Copy entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Create config directory and copy configuration (it's already in /opt/odoo from line 39)
+RUN mkdir -p /etc/odoo \
+    && cp /opt/odoo/odoo.conf /etc/odoo/odoo.conf \
+    && chmod +x /opt/odoo/entrypoint.sh \
+    && cp /opt/odoo/entrypoint.sh /entrypoint.sh \
+    && chown -R odoo:odoo /etc/odoo
 
 # Expose Odoo port
 EXPOSE 8069
 
-# Switch to odoo user
-USER odoo
-
-# Set entrypoint
+# Set entrypoint (runs as root, switches to odoo user inside)
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["odoo"]
+CMD []

@@ -3,26 +3,33 @@ set -e
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL..."
-while ! pg_isready -h "${DB_HOST:-postgres}" -p "${DB_PORT:-5432}" -U "${DB_USER:-postgres}" > /dev/null 2>&1; do
+until PGPASSWORD="${DB_PASSWORD:-safee}" psql -h "${DB_HOST:-postgres}" -p "${DB_PORT:-5432}" -U "${DB_USER:-safee}" -d postgres -c '\q' 2>/dev/null; do
     echo "PostgreSQL is unavailable - sleeping"
     sleep 1
 done
 echo "PostgreSQL is ready!"
 
-# Check if this is first run (no databases exist)
-DB_EXISTS=$(psql -h "${DB_HOST:-postgres}" -p "${DB_PORT:-5432}" -U "${DB_USER:-postgres}" -lqt | cut -d \| -f 1 | grep -w "${ODOO_DB:-odoo}" | wc -l)
+# Multi-tenancy mode: Don't auto-initialize any database
+# Users will create databases through the web interface or API
+# Each client gets their own database
 
-if [ "$DB_EXISTS" -eq "0" ]; then
-    echo "First run detected. Initializing database..."
-    # Initialize database and install base + api_rest module
-    /opt/odoo/odoo-bin -c /etc/odoo/odoo.conf \
-        -d "${ODOO_DB:-odoo}" \
-        -i base,api_rest \
-        --stop-after-init \
-        --without-demo=all
-    echo "Database initialized with api_rest module!"
-fi
+echo "Starting Odoo in multi-tenancy mode..."
+echo "Create databases for each client via:"
+echo "  - Web UI: http://localhost:8069/web/database/manager"
+echo "  - Or via API after container starts"
 
-# Start Odoo
-echo "Starting Odoo..."
-exec /opt/odoo/odoo-bin -c /etc/odoo/odoo.conf "$@"
+# Substitute environment variables into config file
+# This keeps credentials in environment variables, not in git-tracked files
+echo "Database: ${ODOO_DB_USER}@${ODOO_DB_HOST}:${ODOO_DB_PORT}"
+echo "Admin password: $([ -n "${ODOO_ADMIN_PASSWD}" ] && echo "configured" || echo "NOT SET - using default")"
+
+# Create a temporary config file with substituted values
+cp /etc/odoo/odoo.conf /tmp/odoo.conf
+sed -i "s/DB_HOST_PLACEHOLDER/${ODOO_DB_HOST}/g" /tmp/odoo.conf
+sed -i "s/DB_PORT_PLACEHOLDER/${ODOO_DB_PORT}/g" /tmp/odoo.conf
+sed -i "s/DB_USER_PLACEHOLDER/${ODOO_DB_USER}/g" /tmp/odoo.conf
+sed -i "s/DB_PASSWORD_PLACEHOLDER/${ODOO_DB_PASSWORD}/g" /tmp/odoo.conf
+sed -i "s/ADMIN_PASSWD_PLACEHOLDER/${ODOO_ADMIN_PASSWD}/g" /tmp/odoo.conf
+
+# Start Odoo as odoo user
+exec gosu odoo /opt/odoo/odoo-bin -c /tmp/odoo.conf

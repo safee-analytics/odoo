@@ -350,8 +350,8 @@ class CrmRevealRule(models.Model):
         return True
 
     def _iap_contact_reveal(self, params, timeout=300):
-        endpoint = self.env['ir.config_parameter'].sudo().get_param('reveal.endpoint', DEFAULT_ENDPOINT) + '/iap/clearbit/1/reveal'
-        return iap_tools.iap_jsonrpc(endpoint, params=params, timeout=timeout)
+        # IAP Reveal services disabled for privacy - prevents external calls to iap-services.odoo.com
+        raise NotImplementedError("IAP Reveal services are disabled for privacy. External visitor identification services are not available.")
 
     def _create_lead_from_response(self, result):
         """ This method will get response from service and create the lead accordingly """

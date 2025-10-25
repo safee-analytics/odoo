@@ -257,8 +257,8 @@ class CrmIapLeadMiningRequest(models.Model):
             raise UserError(_("Your request could not be executed: %s", e))
 
     def _iap_contact_mining(self, params, timeout=300):
-        endpoint = self.env['ir.config_parameter'].sudo().get_param('reveal.endpoint', DEFAULT_ENDPOINT) + '/iap/clearbit/2/lead_mining_request'
-        return iap_tools.iap_jsonrpc(endpoint, params=params, timeout=timeout)
+        # IAP Lead Mining disabled for privacy - prevents external calls to iap-services.odoo.com
+        raise NotImplementedError("IAP Lead Mining services are disabled for privacy. External lead generation services are not available.")
 
     def _create_leads_from_response(self, result):
         """ This method will get the response from the service and create the leads accordingly """
