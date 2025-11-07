@@ -23,13 +23,16 @@ echo "  - Or via API after container starts"
 echo "Database: ${ODOO_DB_USER}@${ODOO_DB_HOST}:${ODOO_DB_PORT}"
 echo "Admin password: $([ -n "${ODOO_ADMIN_PASSWD}" ] && echo "configured" || echo "NOT SET - using default")"
 
-# Create a temporary config file with substituted values
-cp /etc/odoo/odoo.conf /tmp/odoo.conf
-sed -i "s/DB_HOST_PLACEHOLDER/${ODOO_DB_HOST}/g" /tmp/odoo.conf
-sed -i "s/DB_PORT_PLACEHOLDER/${ODOO_DB_PORT}/g" /tmp/odoo.conf
-sed -i "s/DB_USER_PLACEHOLDER/${ODOO_DB_USER}/g" /tmp/odoo.conf
-sed -i "s/DB_PASSWORD_PLACEHOLDER/${ODOO_DB_PASSWORD}/g" /tmp/odoo.conf
-sed -i "s/ADMIN_PASSWD_PLACEHOLDER/${ODOO_ADMIN_PASSWD}/g" /tmp/odoo.conf
+# Create a writable config file with substituted values in the data directory
+cp /etc/odoo/odoo.conf /var/lib/odoo/odoo.conf
+sed -i "s/DB_HOST_PLACEHOLDER/${ODOO_DB_HOST}/g" /var/lib/odoo/odoo.conf
+sed -i "s/DB_PORT_PLACEHOLDER/${ODOO_DB_PORT}/g" /var/lib/odoo/odoo.conf
+sed -i "s/DB_USER_PLACEHOLDER/${ODOO_DB_USER}/g" /var/lib/odoo/odoo.conf
+sed -i "s/DB_PASSWORD_PLACEHOLDER/${ODOO_DB_PASSWORD}/g" /var/lib/odoo/odoo.conf
+sed -i "s/ADMIN_PASSWD_PLACEHOLDER/${ODOO_ADMIN_PASSWD}/g" /var/lib/odoo/odoo.conf
+
+# Ensure proper ownership
+chown -R odoo:odoo /var/lib/odoo
 
 # Start Odoo as odoo user
-exec gosu odoo /opt/odoo/odoo-bin -c /tmp/odoo.conf
+exec gosu odoo /opt/odoo/odoo-bin -c /var/lib/odoo/odoo.conf
