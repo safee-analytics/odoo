@@ -3,7 +3,7 @@ set -e
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL..."
-until PGPASSWORD="${DB_PASSWORD:-safee}" psql -h "${DB_HOST:-postgres}" -p "${DB_PORT:-5432}" -U "${DB_USER:-safee}" -d postgres -c '\q' 2>/dev/null; do
+until PGPASSWORD="${ODOO_DB_PASSWORD:-safee}" psql -h "${ODOO_DB_HOST:-postgres}" -p "${ODOO_DB_PORT:-5432}" -U "${ODOO_DB_USER:-safee}" -d postgres -c '\q' 2>/dev/null; do
     echo "PostgreSQL is unavailable - sleeping"
     sleep 1
 done
