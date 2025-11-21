@@ -9,5 +9,6 @@ class Publisher_WarrantyContract(models.AbstractModel):
 
     @api.model
     def _get_message(self):
-        # Telemetry disabled for privacy - return empty message
-        return {}
+        msg = super()._get_message()
+        msg['website'] = True
+        return msg
