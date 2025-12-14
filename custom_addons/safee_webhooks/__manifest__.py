@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Safee Webhooks Integration',
-    'version': '1.0.0',
+    'version': '18.0.1.0.0',
     'category': 'Integration',
     'summary': 'Webhook integration between Odoo and Safee Analytics',
     'description': """

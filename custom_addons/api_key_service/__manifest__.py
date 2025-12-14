@@ -1,6 +1,6 @@
 {
     "name": "API Key Service",
-    "version": "1.0.0",
+    "version": "18.0.1.0.0",
     "summary": "Expose REST endpoint to generate Odoo API keys",
     "author": "Safee Analytics",
     "category": "Tools",
