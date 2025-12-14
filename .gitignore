@@ -1,0 +1,21 @@
+# Secrets and environment files
+.env
+*.env
+!.env.example
+!.env.template
+
+# Python cache
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Odoo
+*.pot~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Odoo config (use odoo.conf.template)
+odoo.conf

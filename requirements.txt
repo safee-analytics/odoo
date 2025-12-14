@@ -1,0 +1,36 @@
+# ========================================
+# OCA Custom Modules Dependencies for Odoo 18.0
+# ========================================
+# These packages are installed at runtime in Docker containers
+# See: infra/scripts/init-odoo-template.sh
+
+# REST Framework (base_rest, fastapi)
+fastapi>=0.110.0
+python-multipart
+ujson
+a2wsgi>=1.10.6
+parse-accept-language
+cerberus
+pyquerystring
+apispec
+pydantic>=2.0.0
+typing-extensions
+
+# Component Framework (component, component_event)
+extendable>=0.0.4
+contextvars
+
+# Utilities
+cachetools
+packaging
+
+# Auto Backup Module
+pysftp
+paramiko<4.0.0
+
+# Report Modules (py3o)
+py3o.formats
+py3o.template
+
+# Note: Core Odoo dependencies are included in official odoo:18.0 image
+# This file only contains additional packages needed for OCA modules

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Safee webhook configuration is managed via ir.config_parameter -->
+    <!-- Configuration is set programmatically when organizations are created -->
+    <!-- No UI needed as settings are managed through Safee platform -->
+</odoo>
