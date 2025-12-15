@@ -45,9 +45,9 @@ echo "🏗️  Creating template database..."
 PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d postgres -c "CREATE DATABASE $TEMPLATE_DB;"
 
 # 3. Initialize Odoo with all modules using custom image
-# Note: safee-odoo:18.0 has Python dependencies and custom addons pre-installed
+# Note: ghcr.io/safee-analytics/safee-odoo:18.0 has Python dependencies and custom addons pre-installed
 echo "📦 Installing Odoo modules (this may take 10-15 minutes)..."
-echo "   Using image: safee-odoo:18.0"
+echo "   Using image: ghcr.io/safee-analytics/safee-odoo:18.0"
 echo "   Modules: $ALL_MODULES"
 docker run --rm \
   -e HOST=$DB_HOST \
@@ -56,7 +56,7 @@ docker run --rm \
   -e PASSWORD=$DB_PASSWORD \
   -e ADMIN_PASSWD=$ADMIN_PASSWORD \
   -v /opt/odoo/addons:/mnt/extra-addons \
-  safee-odoo:18.0 \
+  ghcr.io/safee-analytics/safee-odoo:18.0 \
   odoo --db_host=\$HOST --db_port=\$PORT --db_user=\$USER --db_password=\$PASSWORD -d $TEMPLATE_DB -i $ALL_MODULES --stop-after-init --without-demo=all --load-language=en_US
 
 # 4. Mark database as template
