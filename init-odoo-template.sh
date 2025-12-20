@@ -3,12 +3,12 @@ set -e
 
 #######################################
 # Initialize Odoo Template Database
-# This creates _odoo_template with all base modules and custom addons pre-installed
+# This creates odoo_template with all base modules and custom addons pre-installed
 # New company databases will be duplicated from this template
 #######################################
 
 # Configuration
-TEMPLATE_DB="_odoo_template"
+TEMPLATE_DB="odoo_template"
 
 # Read from environment (set by Odoo server's .env file)
 # When running via Terraform, these come from docker-compose .env
