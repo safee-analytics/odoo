@@ -7,6 +7,11 @@ db_password = ${DB_PASSWORD}
 db_maxconn = 64
 db_template = template0
 
+db_args = sslmode=require
+
+# Websocket/Gevent port (required for real-time features when workers > 0)
+gevent_port = 8072
+
 # Server settings
 http_port = 8069
 http_interface = 0.0.0.0
