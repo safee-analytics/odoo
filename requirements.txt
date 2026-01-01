@@ -32,5 +32,8 @@ paramiko<4.0.0
 py3o.formats
 py3o.template
 
+# Error Tracking (sentry module)
+sentry-sdk>=2.0.0,<=2.22.0
+
 # Note: Core Odoo dependencies are included in official odoo:18.0 image
 # This file only contains additional packages needed for OCA modules
