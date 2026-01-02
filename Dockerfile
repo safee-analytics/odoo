@@ -19,25 +19,19 @@ RUN pip3 install --break-system-packages --ignore-installed typing-extensions -r
 COPY custom_addons /mnt/extra-addons/
 RUN chown -R odoo:odoo /mnt/extra-addons
 
-# Switch back to odoo user for security
-USER odoo
+# Copy Odoo configuration file (as root before switching to odoo user)
+COPY odoo.conf /etc/odoo/odoo.conf.template
 
-# Ensure odoo user owns the /var/lib/odoo directory
-RUN chown -R odoo:odoo /var/lib/odoo
+# Copy entrypoint scripts
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY init-odoo-template.sh /usr/local/bin/init-odoo-template.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/init-odoo-template.sh
+
+# Switch to odoo user for security
+USER odoo
 
 # Expose Odoo web interface
 EXPOSE 8069
-
-# Copy Odoo configuration file
-COPY odoo.conf /etc/odoo/odoo.conf.template
-
-# Default command (can be overridden for init operations)
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY init-odoo-template.sh /usr/local/bin/init-odoo-template.sh
-USER root
-RUN chmod +x /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/init-odoo-template.sh
-USER odoo
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
