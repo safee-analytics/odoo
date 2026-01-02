@@ -29,6 +29,18 @@ class SafeeWebhookMixin(models.AbstractModel):
             'enabled': IrConfigParameter.get_param('safee.webhooks_enabled', 'False') == 'True',
         }
 
+    def _derive_org_secret(self, master_secret, organization_id):
+        """
+        Derive per-organization webhook secret from master secret
+        Must match the derivation in gateway webhookVerification.ts:
+        crypto.createHmac("sha256", masterSecret).update(organizationId).digest("hex")
+        """
+        return hmac.new(
+            master_secret.encode('utf-8'),
+            organization_id.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+
     def _compute_signature(self, payload_json, secret):
         """Compute HMAC-SHA256 signature for webhook payload"""
         signature = hmac.new(
@@ -72,7 +84,10 @@ class SafeeWebhookMixin(models.AbstractModel):
         }
 
         payload_json = json.dumps(payload, sort_keys=True)
-        signature = self._compute_signature(payload_json, config['webhook_secret'])
+
+        # Derive per-org secret from master secret (matches gateway logic)
+        org_secret = self._derive_org_secret(config['webhook_secret'], config['organization_id'])
+        signature = self._compute_signature(payload_json, org_secret)
 
         # Build full URL
         webhook_url = config['webhook_url'].rstrip('/') + endpoint_path
