@@ -20,7 +20,13 @@ COPY custom_addons /mnt/extra-addons/
 RUN chown -R odoo:odoo /mnt/extra-addons
 
 # Copy Odoo configuration file (as root before switching to odoo user)
-COPY odoo.conf /etc/odoo/odoo.conf.template
+# Try odoo.conf first (local builds), fall back to template (CI builds)
+COPY odoo.conf* /tmp/
+RUN if [ -f /tmp/odoo.conf ]; then \
+      cp /tmp/odoo.conf /etc/odoo/odoo.conf.template; \
+    else \
+      cp /tmp/odoo.conf.template /etc/odoo/odoo.conf.template; \
+    fi && rm -f /tmp/odoo.conf*
 
 # Copy entrypoint scripts
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
