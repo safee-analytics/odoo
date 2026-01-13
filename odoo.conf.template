@@ -45,3 +45,17 @@ dbfilter = odoo_
 
 # Development settings (disable in production)
 dev_mode = reload
+
+# Sentry Error Tracking Configuration
+# Captures and reports exceptions and errors to Sentry.io
+sentry_enabled = ${SENTRY_ENABLED}
+sentry_dsn = ${SENTRY_DSN}
+sentry_environment = ${SENTRY_ENVIRONMENT}
+sentry_logging_level = warn
+sentry_exclude_loggers = werkzeug
+sentry_ignore_exceptions = odoo.exceptions.AccessDenied,odoo.exceptions.AccessError,odoo.exceptions.MissingError,odoo.exceptions.RedirectWarning,odoo.exceptions.UserError,odoo.exceptions.ValidationError,odoo.exceptions.Warning,odoo.exceptions.except_orm
+sentry_include_context = true
+sentry_odoo_dir = /usr/lib/python3/dist-packages/odoo
+
+# Server-wide modules (loaded at startup)
+server_wide_modules = base,web,sentry,auth_api_key
