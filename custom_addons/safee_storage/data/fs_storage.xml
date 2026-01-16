@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--
+        Cloudflare R2 Storage Backend
+        Configuration comes from odoo.conf [fs_storage.r2_odoo] section
+        which reads from environment variables set by Doppler
+    -->
+    <record id="fs_storage_r2_odoo" model="fs.storage">
+        <field name="name">Safee R2 Storage</field>
+        <field name="code">r2_odoo</field>
+        <field name="protocol">s3</field>
+        <!--
+            Options are read from odoo.conf via server_environment addon:
+            [fs_storage.r2_odoo]
+            protocol=s3
+            options={"endpoint_url": "${R2_ENDPOINT}", "key": "${R2_ACCESS_KEY_ID}", "secret": "${R2_SECRET_ACCESS_KEY}"}
+            directory_path=${R2_BUCKET_UPLOADS}/odoo
+        -->
+
+        <!-- S3-specific settings for signed URLs -->
+        <field name="s3_uses_signed_url_for_x_sendfile" eval="True"/>
+        <field name="s3_signed_url_expiration">30</field>
+
+        <!-- Make this the default storage for new attachments -->
+        <field name="use_as_default_for_attachments" eval="True"/>
+    </record>
+</odoo>
