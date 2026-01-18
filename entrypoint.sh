@@ -17,10 +17,10 @@ else
   exit 1
 fi
 
-# Extract database connection info for health check
-DB_HOST=$(grep "^db_host" "$CONFIG_FILE" | cut -d'=' -f2 | tr -d ' ')
-DB_PORT=$(grep "^db_port" "$CONFIG_FILE" | cut -d'=' -f2 | tr -d ' ')
-DB_USER=$(grep "^db_user" "$CONFIG_FILE" | cut -d'=' -f2 | tr -d ' ')
+# Extract database connection info for health check (handles spaces around =)
+DB_HOST=$(awk -F'=' '/^\s*db_host\s*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
+DB_PORT=$(awk -F'=' '/^\s*db_port\s*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
+DB_USER=$(awk -F'=' '/^\s*db_user\s*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
 
 # Wait for the database to be ready
 >&2 echo "Waiting for database at ${DB_HOST}:${DB_PORT}..."

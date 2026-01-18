@@ -13,7 +13,8 @@ if [ -n "${DOPPLER_TOKEN:-}" ]; then
     DOPPLER_ARGS="$DOPPLER_ARGS --token $DOPPLER_TOKEN"
 fi
 
-doppler secrets download $DOPPLER_ARGS --no-file --format env > "$SCRIPT_DIR/.env"
+rm -f "$SCRIPT_DIR/.env"
+(umask 077; doppler secrets download $DOPPLER_ARGS --no-file --format env > "$SCRIPT_DIR/.env")
 
 echo "⚙️ Rendering Odoo config..."
 set -a
@@ -24,5 +25,3 @@ envsubst < "$SCRIPT_DIR/odoo.conf" > "$SCRIPT_DIR/odoo.conf.rendered"
 chmod 644 "$SCRIPT_DIR/odoo.conf.rendered"
 
 echo "✅ Config rendered to $SCRIPT_DIR/odoo.conf.rendered"
-echo "   DB_HOST: $DB_HOST"
-echo "   DB_NAME: $DB_NAME"

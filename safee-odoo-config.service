@@ -7,7 +7,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 Environment=DOPPLER_PROJECT=odoo
-Environment=DOPPLER_CONFIG=dev
+EnvironmentFile=-/etc/default/safee-odoo
 ExecStart=/opt/odoo/render-config.sh
 RemainAfterExit=yes
 WorkingDirectory=/opt/odoo
