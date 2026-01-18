@@ -24,6 +24,7 @@ DB_USER=$(awk -F'=' '/^\s*db_user\s*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $
 
 # Wait for the database to be ready
 >&2 echo "Waiting for database at ${DB_HOST}:${DB_PORT}..."
+export PGSSLMODE=require
 until pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}"; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 2
