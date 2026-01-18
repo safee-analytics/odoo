@@ -3,8 +3,9 @@ name: Build and Deploy Odoo
 on:
   push:
     branches:
-      - main
       - dev
+      - staging
+      - main
   workflow_dispatch:
     inputs:
       environment:
@@ -34,6 +35,8 @@ jobs:
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "environment=prod" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            echo "environment=stg" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
           fi
