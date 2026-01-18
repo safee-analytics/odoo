@@ -104,15 +104,53 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           envs: DOPPLER_TOKEN,DOPPLER_CONFIG
           script: |
+            set -e
+
+            # Verify directory exists
+            if [ ! -d "/opt/odoo" ]; then
+              echo "❌ /opt/odoo directory not found!"
+              echo "This server needs to be provisioned with Terraform first."
+              echo "Run: cd tofu/environments/${{ needs.set-env.outputs.environment }} && tofu apply"
+              exit 1
+            fi
+
             cd /opt/odoo
+
+            # Pull latest code from this branch
+            echo "📥 Pulling latest code from ${{ github.ref_name }}..."
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
+
+            # Render config with Doppler
             export DOPPLER_TOKEN="${DOPPLER_TOKEN}"
             export DOPPLER_CONFIG="${DOPPLER_CONFIG}"
+
+            if [ ! -f "./render-config.sh" ]; then
+              echo "❌ render-config.sh not found!"
+              exit 1
+            fi
+
+            echo "🔑 Rendering config from Doppler..."
+            chmod +x ./render-config.sh
             ./render-config.sh
+
+            # Pull latest images
+            echo "📦 Pulling Docker images..."
             docker compose pull
+
+            # Deploy with rolling restart
+            echo "🚀 Deploying..."
             docker compose up -d --force-recreate
-            echo "Waiting for Odoo to be healthy..."
-            sleep 10
+
+            # Wait for health
+            echo "⏳ Waiting for Odoo to be healthy..."
+            sleep 15
+
+            # Check status
+            echo "📊 Service status:"
             docker compose ps
+
+            echo "✅ Deployment complete!"
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_CONFIG: ${{ needs.set-env.outputs.environment }}
