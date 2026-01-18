@@ -1,0 +1,16 @@
+[Unit]
+Description=Render Odoo config from Doppler
+Before=docker.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=DOPPLER_PROJECT=odoo
+Environment=DOPPLER_CONFIG=dev
+ExecStart=/opt/odoo/render-config.sh
+RemainAfterExit=yes
+WorkingDirectory=/opt/odoo
+
+[Install]
+WantedBy=multi-user.target

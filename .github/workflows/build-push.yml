@@ -1,21 +1,51 @@
-name: Build and Push Odoo Image
+name: Build and Deploy Odoo
 
 on:
   push:
     branches:
       - main
+      - dev
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/safee-odoo
 
 jobs:
+  set-env:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+      - name: Determine environment
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
   build-and-push:
+    needs: set-env
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
 
     steps:
       - name: Checkout code
@@ -37,9 +67,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=18.0
-            type=raw,value=latest
-            type=sha,prefix=18.0-
+            type=raw,value=18.0-${{ needs.set-env.outputs.environment }}
+            type=sha,prefix=18.0-${{ needs.set-env.outputs.environment }}-
 
       - name: Build and push Odoo Docker image
         uses: docker/build-push-action@v5
@@ -56,6 +85,31 @@ jobs:
       - name: Image details
         run: |
           echo "✅ Odoo image built and pushed successfully!"
-          echo ""
-          echo "📦 Images:"
-          echo "${{ steps.meta.outputs.tags }}"
+          echo "📦 Images: ${{ steps.meta.outputs.tags }}"
+
+  deploy:
+    needs: [set-env, build-and-push]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.set-env.outputs.environment }}
+
+    steps:
+      - name: Deploy to Odoo
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: DOPPLER_TOKEN,DOPPLER_CONFIG
+          script: |
+            cd /opt/odoo
+            export DOPPLER_TOKEN="${DOPPLER_TOKEN}"
+            export DOPPLER_CONFIG="${DOPPLER_CONFIG}"
+            ./render-config.sh
+            docker compose pull
+            docker compose up -d --force-recreate
+            echo "Waiting for Odoo to be healthy..."
+            sleep 10
+            docker compose ps
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+          DOPPLER_CONFIG: ${{ needs.set-env.outputs.environment }}

@@ -17,5 +17,5 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Odoo config (use odoo.conf.template)
-odoo.conf
+# Rendered Odoo config (generated from odoo.conf template)
+odoo.conf.rendered
