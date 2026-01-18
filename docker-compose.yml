@@ -1,0 +1,36 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
+services:
+  odoo:
+    image: ${ODOO_IMAGE:-ghcr.io/safee-analytics/safee-odoo:18.0}
+    logging: *default-logging
+    ports:
+      - "8069:8069"
+      - "8072:8072"
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./odoo.conf.rendered:/etc/odoo/odoo.conf:ro
+    env_file:
+      - path: .env
+        required: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - safee-network
+
+networks:
+  safee-network:
+    external: true
+    name: safee_safee-network
+
+volumes:
+  odoo-data:
