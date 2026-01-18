@@ -138,9 +138,13 @@ jobs:
             echo "📦 Pulling Docker images..."
             docker compose pull
 
-            # Deploy with rolling restart
+            # Stop existing containers to free ports
+            echo "🛑 Stopping existing containers..."
+            docker compose down
+
+            # Deploy with fresh containers
             echo "🚀 Deploying..."
-            docker compose up -d --force-recreate
+            docker compose up -d
 
             # Wait for health
             echo "⏳ Waiting for Odoo to be healthy..."
