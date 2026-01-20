@@ -102,7 +102,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: DOPPLER_TOKEN,DOPPLER_CONFIG
+          envs: DOPPLER_TOKEN,DOPPLER_CONFIG,GIT_REF
           script: |
             set -e
 
@@ -115,13 +115,8 @@ jobs:
             fi
 
             cd /opt/odoo
-
-            # Pull latest code from this branch
-            echo "📥 Pulling latest code from ${{ github.ref_name }}..."
             git fetch origin
-            git reset --hard origin/${{ github.ref_name }}
-
-            # Render config with Doppler
+            git checkout "origin/${GIT_REF}" -- docker-compose.yml render-config.sh odoo.conf
             export DOPPLER_TOKEN="${DOPPLER_TOKEN}"
             export DOPPLER_CONFIG="${DOPPLER_CONFIG}"
 
@@ -158,3 +153,4 @@ jobs:
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_CONFIG: ${{ needs.set-env.outputs.environment }}
+          GIT_REF: ${{ github.ref_name }}
