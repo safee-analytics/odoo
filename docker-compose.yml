@@ -17,6 +17,9 @@ services:
     env_file:
       - path: .env
         required: false
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
       interval: 30s

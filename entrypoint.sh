@@ -18,12 +18,13 @@ else
 fi
 
 # Extract database connection info for health check (handles spaces around =)
-DB_HOST=$(awk -F'=' '/^\s*db_host\s*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
-DB_PORT=$(awk -F'=' '/^\s*db_port\s*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
-DB_USER=$(awk -F'=' '/^\s*db_user\s*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
+DB_HOST=$(awk -F'=' '/^[ \t]*db_host[ \t]*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
+DB_PORT=$(awk -F'=' '/^[ \t]*db_port[ \t]*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
+DB_USER=$(awk -F'=' '/^[ \t]*db_user[ \t]*=/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit}' "$CONFIG_FILE")
 
 # Wait for the database to be ready
 >&2 echo "Waiting for database at ${DB_HOST}:${DB_PORT}..."
+export PGSSLMODE=require
 until pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}"; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 2

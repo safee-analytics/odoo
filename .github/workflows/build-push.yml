@@ -3,8 +3,9 @@ name: Build and Deploy Odoo
 on:
   push:
     branches:
-      - main
       - dev
+      - staging
+      - main
   workflow_dispatch:
     inputs:
       environment:
@@ -34,6 +35,8 @@ jobs:
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "environment=prod" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            echo "environment=stg" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
           fi
@@ -101,17 +104,52 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           envs: DOPPLER_TOKEN,DOPPLER_CONFIG,GIT_REF
           script: |
+            set -e
+
+            # Verify directory exists
+            if [ ! -d "/opt/odoo" ]; then
+              echo "❌ /opt/odoo directory not found!"
+              echo "This server needs to be provisioned with Terraform first."
+              echo "Run: cd tofu/environments/${{ needs.set-env.outputs.environment }} && tofu apply"
+              exit 1
+            fi
+
             cd /opt/odoo
             git fetch origin
             git checkout "origin/${GIT_REF}" -- docker-compose.yml render-config.sh odoo.conf
             export DOPPLER_TOKEN="${DOPPLER_TOKEN}"
             export DOPPLER_CONFIG="${DOPPLER_CONFIG}"
+
+            if [ ! -f "./render-config.sh" ]; then
+              echo "❌ render-config.sh not found!"
+              exit 1
+            fi
+
+            echo "🔑 Rendering config from Doppler..."
+            chmod +x ./render-config.sh
             ./render-config.sh
+
+            # Pull latest images
+            echo "📦 Pulling Docker images..."
             docker compose pull
-            docker compose up -d --force-recreate
-            echo "Waiting for Odoo to be healthy..."
-            sleep 10
+
+            # Stop existing containers to free ports
+            echo "🛑 Stopping existing containers..."
+            docker compose down
+
+            # Deploy with fresh containers
+            echo "🚀 Deploying..."
+            docker compose up -d
+
+            # Wait for health
+            echo "⏳ Waiting for Odoo to be healthy..."
+            sleep 15
+
+            # Check status
+            echo "📊 Service status:"
             docker compose ps
+
+            echo "✅ Deployment complete!"
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_CONFIG: ${{ needs.set-env.outputs.environment }}
