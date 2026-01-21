@@ -35,11 +35,12 @@ py3o.template
 # Error Tracking (sentry module)
 sentry-sdk>=2.0.0,<=2.22.0
 
-# Filesystem Storage (fs_storage, fs_attachment_s3)
+# Filesystem Storage (fs_storage, fs_attachment_s3, storage_backend_s3)
 # For Cloudflare R2 and S3-compatible storage
 fsspec[s3]>=2024.5.0
 s3fs
 aiobotocore
+boto3
 
 # Note: Core Odoo dependencies are included in official odoo:18.0 image
 # This file only contains additional packages needed for OCA modules
