@@ -13,10 +13,28 @@ _logger = logging.getLogger(__name__)
 _pending_jobs = {}
 
 
+def _terminate_db_connections(source_db, job_id):
+    try:
+        db = odoo.sql_db.db_connect("postgres")
+        with db.cursor() as cr:
+            cr.execute("""
+                SELECT pg_terminate_backend(pid)
+                FROM pg_stat_activity
+                WHERE datname = %s AND pid <> pg_backend_pid()
+            """, (source_db,))
+            terminated = cr.rowcount
+            _logger.info("[%s] Terminated %d connections to %s", job_id, terminated, source_db)
+    except Exception as e:
+        _logger.warning("[%s] Failed to terminate connections: %s", job_id, e)
+
+
 def _run_duplication(job_id, source_db, new_db, neutralize, webhook_url, organization_id):
     try:
         _logger.info("[%s] Starting duplication: %s -> %s", job_id, source_db, new_db)
         _pending_jobs[job_id] = {"status": "running", "source_db": source_db, "new_db": new_db}
+
+        odoo.sql_db.close_db(source_db)
+        _terminate_db_connections(source_db, job_id)
 
         max_retries = 3
         last_error = None
@@ -33,6 +51,7 @@ def _run_duplication(job_id, source_db, new_db, neutralize, webhook_url, organiz
                 error_str = str(e)
                 if "being accessed by other users" in error_str and attempt < max_retries - 1:
                     _logger.warning("[%s] Retry %d/%d: %s", job_id, attempt + 1, max_retries, error_str)
+                    _terminate_db_connections(source_db, job_id)
                     import time
                     time.sleep(2)
                     continue
