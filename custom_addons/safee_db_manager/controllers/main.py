@@ -15,14 +15,31 @@ _pending_jobs = {}
 
 def _terminate_db_connections(source_db, job_id):
     try:
+        from odoo.modules.registry import Registry
+        if source_db in Registry.registries:
+            _logger.info("[%s] Deleting Odoo registry for %s", job_id, source_db)
+            del Registry.registries[source_db]
+
+        odoo.sql_db.close_db(source_db)
+
         db = odoo.sql_db.db_connect("postgres")
         with db.cursor() as cr:
+            cr.execute("""
+                SELECT pid, usename, application_name, state, backend_type
+                FROM pg_stat_activity
+                WHERE datname = %s
+            """, (source_db,))
+            connections = cr.fetchall()
+            if connections:
+                _logger.info("[%s] Active connections to %s: %s", job_id, source_db, connections)
+
             cr.execute("""
                 SELECT pg_terminate_backend(pid)
                 FROM pg_stat_activity
                 WHERE datname = %s AND pid <> pg_backend_pid()
             """, (source_db,))
-            terminated = cr.rowcount
+            results = cr.fetchall()
+            terminated = sum(1 for r in results if r[0])
             _logger.info("[%s] Terminated %d connections to %s", job_id, terminated, source_db)
     except Exception as e:
         _logger.warning("[%s] Failed to terminate connections: %s", job_id, e)
@@ -36,7 +53,7 @@ def _run_duplication(job_id, source_db, new_db, neutralize, webhook_url, organiz
         odoo.sql_db.close_db(source_db)
         _terminate_db_connections(source_db, job_id)
 
-        max_retries = 3
+        max_retries = 5
         last_error = None
 
         for attempt in range(max_retries):
@@ -53,7 +70,7 @@ def _run_duplication(job_id, source_db, new_db, neutralize, webhook_url, organiz
                     _logger.warning("[%s] Retry %d/%d: %s", job_id, attempt + 1, max_retries, error_str)
                     _terminate_db_connections(source_db, job_id)
                     import time
-                    time.sleep(2)
+                    time.sleep(3)
                     continue
                 break
 
