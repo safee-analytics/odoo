@@ -55,8 +55,7 @@ services:
 
 networks:
   safee-network:
-    external: true
-    name: safee_safee-network
+    driver: bridge
 
 volumes:
   odoo-data:
