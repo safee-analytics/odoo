@@ -48,6 +48,21 @@ class SafeeDbManagerController(http.Controller):
 
         try:
             _logger.info("Duplicating database: %s -> %s", source_db, new_db)
+
+            odoo.sql_db.close_db(source_db)
+
+            db = odoo.sql_db.db_connect(source_db)
+            with db.cursor() as cr:
+                cr.execute("""
+                    SELECT pg_terminate_backend(pid)
+                    FROM pg_stat_activity
+                    WHERE datname = %s AND pid != pg_backend_pid()
+                """, (source_db,))
+                terminated = cr.fetchall()
+                _logger.info("Terminated %d connections to %s", len(terminated), source_db)
+
+            odoo.sql_db.close_db(source_db)
+
             db_service.exp_duplicate_database(source_db, new_db, neutralize)
             _logger.info("Successfully duplicated database: %s -> %s", source_db, new_db)
             return {"success": True, "message": f"Duplicated {source_db} to {new_db}"}
