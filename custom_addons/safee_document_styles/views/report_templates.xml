@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Safee Styled External Layout - Can be used instead of web.external_layout -->
+    <template id="safee_external_layout" name="Safee External Layout">
+        <t t-set="company" t-value="o.company_id if o and 'company_id' in o else res_company"/>
+        <t t-set="styles">
+            --safee-primary: <t t-out="company.safee_primary_color or '#3B82F6'"/>;
+            --safee-secondary: <t t-out="company.safee_secondary_color or '#8B5CF6'"/>;
+            --safee-accent: <t t-out="company.safee_accent_color or '#8B5CF6'"/>;
+            --safee-text: <t t-out="company.safee_text_color or '#1F2937'"/>;
+            --safee-bg: <t t-out="company.safee_background_color or '#FFFFFF'"/>;
+            --safee-heading-font: <t t-out="company.safee_heading_font or 'Inter'"/>, sans-serif;
+            --safee-body-font: <t t-out="company.safee_body_font or 'Inter'"/>, sans-serif;
+        </t>
+        <div class="article o_report_layout_standard"
+             t-attf-style="font-family: var(--safee-body-font); color: var(--safee-text); background-color: var(--safee-bg); {{ styles }}">
+
+            <!-- Header -->
+            <t t-if="company.safee_show_logo or company.safee_show_company_address">
+                <div class="header" t-attf-style="border-bottom: 2px solid {{ company.safee_primary_color or '#3B82F6' }}; padding-bottom: 10px; margin-bottom: 20px;">
+                    <div t-attf-class="row" t-attf-style="text-align: {{ company.safee_logo_position or 'left' }};">
+                        <div class="col-6">
+                            <t t-if="company.safee_show_logo and company.logo">
+                                <img t-att-src="image_data_uri(company.logo)"
+                                     style="max-height: 80px; max-width: 200px;"
+                                     alt="Company Logo"/>
+                            </t>
+                        </div>
+                        <div class="col-6 text-end">
+                            <t t-if="company.safee_show_company_address">
+                                <div style="font-size: 10px; color: #666;">
+                                    <strong t-field="company.name"/><br/>
+                                    <span t-field="company.street"/><br/>
+                                    <t t-if="company.street2">
+                                        <span t-field="company.street2"/><br/>
+                                    </t>
+                                    <span t-field="company.city"/>, <span t-field="company.state_id.name"/> <span t-field="company.zip"/><br/>
+                                    <t t-if="company.phone">
+                                        Tel: <span t-field="company.phone"/><br/>
+                                    </t>
+                                    <t t-if="company.email">
+                                        <span t-field="company.email"/>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                    <t t-if="company.safee_custom_header_text">
+                        <div class="text-center" style="margin-top: 10px; font-size: 11px;">
+                            <span t-field="company.safee_custom_header_text"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+            <!-- Page content slot -->
+            <t t-out="0"/>
+
+            <!-- Footer -->
+            <t t-if="company.safee_show_footer">
+                <div class="footer" style="border-top: 1px solid #eee; padding-top: 10px; margin-top: 20px; font-size: 10px; color: #666;">
+                    <div class="row">
+                        <div class="col-8">
+                            <t t-if="company.safee_custom_footer_text">
+                                <span t-field="company.safee_custom_footer_text"/>
+                            </t>
+                        </div>
+                        <div class="col-4 text-end">
+                            <t t-if="company.safee_show_page_numbers">
+                                Page <span class="page"/> of <span class="topage"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </template>
+
+    <!-- Styled invoice title that uses company settings -->
+    <template id="safee_document_title" name="Safee Document Title">
+        <t t-set="company" t-value="o.company_id if o and 'company_id' in o else res_company"/>
+        <h1 t-attf-style="color: {{ company.safee_primary_color or '#3B82F6' }}; font-family: {{ company.safee_heading_font or 'Inter' }}, sans-serif; font-weight: 700;">
+            <t t-out="title"/>
+        </h1>
+    </template>
+
+    <!-- Styled table header -->
+    <template id="safee_table_header_style" name="Safee Table Header Style">
+        <t t-set="company" t-value="o.company_id if o and 'company_id' in o else res_company"/>
+        <style>
+            .safee-table thead th {
+                background-color: <t t-out="company.safee_accent_color or '#8B5CF6'"/> !important;
+                color: white !important;
+                font-family: <t t-out="company.safee_heading_font or 'Inter'"/>, sans-serif;
+                padding: 10px 8px;
+            }
+            .safee-table tbody td {
+                font-family: <t t-out="company.safee_body_font or 'Inter'"/>, sans-serif;
+                padding: 8px;
+                border-bottom: 1px solid #eee;
+            }
+            .safee-total {
+                color: <t t-out="company.safee_primary_color or '#3B82F6'"/>;
+                font-weight: 700;
+                font-size: 1.5em;
+            }
+        </style>
+    </template>
+
+    <!-- Invoice specific styles -->
+    <template id="safee_invoice_styles" name="Safee Invoice Styles">
+        <t t-set="company" t-value="o.company_id"/>
+        <t t-call="safee_document_styles.safee_table_header_style"/>
+        <style>
+            .safee-invoice-info {
+                font-size: <t t-out="company.get_font_size_px()"/>px;
+            }
+            .safee-invoice-label {
+                font-weight: 600;
+                color: #666;
+            }
+            .safee-bill-to-title {
+                color: <t t-out="company.safee_primary_color or '#3B82F6'"/>;
+                font-weight: 600;
+                margin-bottom: 5px;
+            }
+        </style>
+    </template>
+
+    <!-- Payment info section for invoices -->
+    <template id="safee_payment_info" name="Safee Payment Info">
+        <t t-set="company" t-value="o.company_id"/>
+        <t t-if="company.safee_show_bank_details and o.partner_bank_id">
+            <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
+                <strong style="color: {{ company.safee_primary_color or '#3B82F6' }};">Payment Information</strong>
+                <div style="margin-top: 10px; font-size: 11px;">
+                    <strong>Bank:</strong> <span t-field="o.partner_bank_id.bank_id.name"/><br/>
+                    <strong>Account:</strong> <span t-field="o.partner_bank_id.acc_number"/><br/>
+                    <t t-if="o.partner_bank_id.bank_bic">
+                        <strong>BIC/SWIFT:</strong> <span t-field="o.partner_bank_id.bank_bic"/>
+                    </t>
+                </div>
+            </div>
+        </t>
+        <t t-if="company.safee_show_payment_terms and o.invoice_payment_term_id">
+            <div style="margin-top: 10px; font-size: 11px;">
+                <strong>Payment Terms:</strong> <span t-field="o.invoice_payment_term_id.name"/>
+            </div>
+        </t>
+    </template>
+</odoo>

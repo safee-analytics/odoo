@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_company_form_safee_styles" model="ir.ui.view">
+        <field name="name">res.company.form.safee.styles</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_info']" position="after">
+                <page string="Document Styles" name="safee_document_styles">
+                    <group string="Colors">
+                        <group>
+                            <field name="safee_primary_color" widget="color"/>
+                            <field name="safee_secondary_color" widget="color"/>
+                            <field name="safee_accent_color" widget="color"/>
+                        </group>
+                        <group>
+                            <field name="safee_text_color" widget="color"/>
+                            <field name="safee_background_color" widget="color"/>
+                        </group>
+                    </group>
+
+                    <group string="Typography">
+                        <group>
+                            <field name="safee_heading_font"/>
+                            <field name="safee_body_font"/>
+                        </group>
+                        <group>
+                            <field name="safee_font_size"/>
+                            <field name="safee_logo_position"/>
+                        </group>
+                    </group>
+
+                    <group string="Display Options">
+                        <group>
+                            <field name="safee_show_logo"/>
+                            <field name="safee_show_company_address"/>
+                            <field name="safee_show_footer"/>
+                            <field name="safee_show_page_numbers"/>
+                        </group>
+                        <group>
+                            <field name="safee_show_payment_terms"/>
+                            <field name="safee_show_bank_details"/>
+                            <field name="safee_show_qr_code"/>
+                            <field name="safee_show_tax_details"/>
+                        </group>
+                    </group>
+
+                    <group string="HR Document Options">
+                        <group>
+                            <field name="safee_show_employee_photo"/>
+                            <field name="safee_show_signature_line"/>
+                        </group>
+                    </group>
+
+                    <group string="Custom Labels">
+                        <group>
+                            <field name="safee_invoice_label"/>
+                            <field name="safee_quote_label"/>
+                            <field name="safee_bill_to_label"/>
+                        </group>
+                        <group>
+                            <field name="safee_date_label"/>
+                            <field name="safee_due_date_label"/>
+                            <field name="safee_total_label"/>
+                        </group>
+                    </group>
+
+                    <group string="Custom Text">
+                        <field name="safee_custom_header_text" colspan="2"/>
+                        <field name="safee_custom_footer_text" colspan="2"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
