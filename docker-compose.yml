@@ -26,7 +26,7 @@ services:
       - safee-network
 
   pgbouncer:
-    image: bitnami/pgbouncer:latest
+    image: public.ecr.aws/bitnami/pgbouncer:latest
     logging: *default-logging
     depends_on:
       postgres:
