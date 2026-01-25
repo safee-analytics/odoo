@@ -9,7 +9,7 @@ services:
     image: postgres:16-alpine
     logging: *default-logging
     ports:
-      - "10.0.1.20:5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: ${DB_USER:-odoo}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -25,11 +25,42 @@ services:
     networks:
       - safee-network
 
+  pgbouncer:
+    image: bitnami/pgbouncer:1.24.0
+    logging: *default-logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRESQL_HOST: postgres
+      POSTGRESQL_PORT: 5432
+      POSTGRESQL_USERNAME: ${DB_USER:-odoo}
+      POSTGRESQL_PASSWORD: ${DB_PASSWORD}
+      POSTGRESQL_DATABASE: postgres
+      PGBOUNCER_DATABASE: "*"
+      PGBOUNCER_PORT: 6432
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: 400
+      PGBOUNCER_DEFAULT_POOL_SIZE: 40
+      PGBOUNCER_MIN_POOL_SIZE: 10
+      PGBOUNCER_RESERVE_POOL_SIZE: 10
+      PGBOUNCER_RESERVE_POOL_TIMEOUT: 3
+      PGBOUNCER_MAX_DB_CONNECTIONS: 100
+      PGBOUNCER_IGNORE_STARTUP_PARAMETERS: extra_float_digits
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U ${DB_USER:-odoo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - safee-network
+
   odoo:
     image: ${ODOO_IMAGE:-ghcr.io/safee-analytics/safee-odoo:18.0}
     logging: *default-logging
     depends_on:
-      postgres:
+      pgbouncer:
         condition: service_healthy
     ports:
       - "8069:8069"
@@ -40,6 +71,8 @@ services:
     env_file:
       - path: .env
         required: false
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     dns:
       - 8.8.8.8
       - 1.1.1.1
