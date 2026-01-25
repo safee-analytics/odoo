@@ -48,11 +48,10 @@ services:
       PGBOUNCER_MAX_DB_CONNECTIONS: 100
       PGBOUNCER_IGNORE_STARTUP_PARAMETERS: extra_float_digits
     healthcheck:
-      test: ["CMD", "/opt/bitnami/scripts/pgbouncer/healthcheck.sh"]
-      interval: 10s
+      test: 'env PGPASSWORD="$$POSTGRESQL_PASSWORD" psql -p 6432 -U "$$POSTGRESQL_USERNAME" pgbouncer -b -c "SHOW USERS" >/dev/null'
+      interval: 5s
       timeout: 5s
-      retries: 5
-      start_period: 10s
+      retries: 6
     restart: unless-stopped
     networks:
       - safee-network
