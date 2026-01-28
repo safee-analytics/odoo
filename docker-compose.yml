@@ -9,7 +9,7 @@ services:
     image: postgres:16-alpine
     logging: *default-logging
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     environment:
       POSTGRES_USER: ${DB_USER:-odoo}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -56,6 +56,9 @@ services:
       PGBOUNCER_TCP_KEEPIDLE: ${PGBOUNCER_TCP_KEEPIDLE:-30}
       PGBOUNCER_TCP_KEEPINTVL: ${PGBOUNCER_TCP_KEEPINTVL:-10}
       PGBOUNCER_TCP_KEEPCNT: ${PGBOUNCER_TCP_KEEPCNT:-3}
+      PGBOUNCER_SERVER_CHECK_DELAY: ${PGBOUNCER_SERVER_CHECK_DELAY:-5}
+      PGBOUNCER_SERVER_RESET_QUERY: DISCARD ALL
+      PGBOUNCER_SERVER_FAST_CLOSE: ${PGBOUNCER_SERVER_FAST_CLOSE:-1}
     healthcheck:
       test: 'env PGPASSWORD="$$POSTGRESQL_PASSWORD" psql -p 6432 -U "$$POSTGRESQL_USERNAME" pgbouncer -b -c "SHOW USERS" >/dev/null'
       interval: 5s
@@ -72,8 +75,7 @@ services:
       pgbouncer:
         condition: service_healthy
     ports:
-      - "8069:8069"
-      - "8072:8072"
+      - "127.0.0.1:8069:8069"
     volumes:
       - odoo-data:/var/lib/odoo
       - ./odoo.conf.rendered:/etc/odoo/odoo.conf:ro
