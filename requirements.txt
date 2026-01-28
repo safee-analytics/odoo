@@ -42,5 +42,8 @@ s3fs
 aiobotocore
 boto3
 
+# Attachment Queue (attachment_queue, attachment_synchronize)
+openupgradelib
+
 # Note: Core Odoo dependencies are included in official odoo:18.0 image
 # This file only contains additional packages needed for OCA modules
